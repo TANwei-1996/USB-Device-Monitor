@@ -10,7 +10,6 @@ from core.usb_search import scan_usb_devices
 from utils import (
     setup_logger,
     print_device_list,
-    # guess_vendor,
     device_type,
     safe_str,
 )
@@ -40,7 +39,7 @@ def build_devices(raw_list):
             pid=pid,
             status=status,
             device_type=device_type(name),
-            # vendor_name=guess_vendor(vid),
+            audio_children=d.get('audio_children') or []
         ))
     return DeviceList(devices=result)
 
@@ -55,8 +54,6 @@ def show_details(d_list):
     # 设备列表
     for i, d in enumerate(d_list.devices, 1):
         print(f"\n[{i}] {d.friendly_name}")
-        # print(f"    类型: {d.device_type}")
-        # print(f"    厂商: {d.vendor_name}")
         print(f"    VID:  {d.vid}")
         print(f"    PID:  {d.pid}")
         #显示分支下的音频设备
@@ -69,13 +66,13 @@ def show_details(d_list):
 
 def main():
     print("=" * 70)
-    print("  USB设备监控器  v0.1.0")
+    print("  USB设备监控器  v0.1.1")
     print("=" * 70)
     print()
 
     try:
         print("正在搜索USB设备...")
-        devices = scan_usb_devices()
+        devices = scan_usb_devices(connected_audio=True)
 
         if not devices:
             print("无USB设备接入")
@@ -98,5 +95,4 @@ def main():
 
 
 if __name__ == '__main__':
-    devices = scan_usb_devices(connected_audio=True)
     sys.exit(main())

@@ -61,6 +61,7 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
             cmd,
             shell=True,
             capture_output=True,
+            text=True,
             encoding='gbk',
             errors='ignore',
             timeout=10,
@@ -80,8 +81,8 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
             return []
 
         for d in devices:
-            iid = d.get('InstanceId') or d.get('instanceId') or ""
-            vid, pid = split_vid_pid(iid)
+            id = d.get('InstanceId') or d.get('instanceId') or ""
+            vid, pid = split_vid_pid(id)
             d['VID'] = vid
             d['PID'] = pid
 
@@ -94,16 +95,16 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
         # 关联设备:定义变量 audio
         audio_dev = scan_audio_devices()
         for a_d in audio_dev:
-            parent_dev_id = a_d.get('ParentInstanceId',"")  # 未找到，返回 null
+            parent_dev_id = a_d.get('ParentInstanceId', "")  # 未找到，返回 null
             if parent_dev_id not in audio_dict:
                 audio_dict[parent_dev_id] = []
 
             audio_dict[parent_dev_id].append(
                 {
-                    "name":a_d.get('FriendlyName','None'),
-                    "dirction":check_audio_dir(a_d.get('FriendlyName',' ')),
-                    "stauts":a_d.get('Status','None'),
-                 }
+                    "name": a_d.get('FriendlyName', 'None'),
+                    "direction": check_audio_dir(a_d.get('FriendlyName', ' ')),
+                    "status": a_d.get('Status', 'None'),
+                }
             )
 
         # 添加具体的音频信息到整体devices
@@ -112,9 +113,11 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
             # 父类id和分支下的设备id匹配
             match_aud = []
             for parent_dev_id, a_list in audio_dict.items():
+                if not parent_dev_id:
+                    continue
                 if usb_id in parent_dev_id:
                     match_aud.extend(a_list)
-            usb_dev['match_aud'] = match_aud
+            usb_dev['audio_children'] = match_aud
 
         log.info(f"扫描完成，发现 {len(devices)} 个设备")
         return devices

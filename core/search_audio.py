@@ -5,23 +5,20 @@
 """
 import json
 import subprocess
-
 from typing import List, Dict
-
-from openpyxl.styles.builtins import output
-
 from utils import setup_logger
 
+# 日志模块初始化
 log = setup_logger(__name__)
-
 
 def scan_audio_devices() -> List[Dict]:
     """
     扫描音频输入/输出设备
     返回设备列表
     """
-    log.info("搜索音频设备")
+    log.info("="*30 + " 搜索音频设备 " + "="*30)
 
+    # 获取：FriendlyName, InstanceId, ParentInstanceId, Status
     cmd = (
         'powershell -NoProfile -Command '
         '"Get-PnpDevice -Class AudioEndpoint -ErrorAction SilentlyContinue | '
@@ -35,8 +32,7 @@ def scan_audio_devices() -> List[Dict]:
             cmd,
             shell=True,
             capture_output=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            text=True,
             timeout=10,
             errors='ignore',
             encoding='gbk'

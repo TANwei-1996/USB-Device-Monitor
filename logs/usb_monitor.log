@@ -173,3 +173,59 @@ AttributeError: 'DeviceList' object has no attribute 'get_vendor_stats'
 10:26:14 [INFO] core.usb_search: 扫描完成，发现 4 个设备
 10:26:14 [INFO] core.usb_search: 搜索USB设备...
 10:26:15 [INFO] main: 运行结束
+16:21:35 [INFO] core.usb_search: 搜索USB设备...
+16:21:36 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:21:37 [ERROR] core.usb_search: 扫描异常:argument of type 'NoneType' is not a container or iterable
+Traceback (most recent call last):
+  File "D:\tmp\USB-Devices-Monitor\core\usb_search.py", line 116, in scan_usb_devices
+    if usb_id in parent_dev_id:
+       ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: argument of type 'NoneType' is not a container or iterable
+16:29:13 [INFO] core.usb_search: 搜索USB设备...
+16:29:14 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:29:15 [ERROR] core.usb_search: 扫描异常:argument of type 'NoneType' is not a container or iterable
+Traceback (most recent call last):
+  File "D:\tmp\USB-Devices-Monitor\core\usb_search.py", line 116, in scan_usb_devices
+    if usb_id in parent_dev_id:
+       ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: argument of type 'NoneType' is not a container or iterable
+16:31:49 [INFO] core.usb_search: 搜索USB设备...
+16:31:50 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:31:51 [ERROR] core.usb_search: 扫描异常:'in <string>' requires string as left operand, not NoneType
+Traceback (most recent call last):
+  File "D:\tmp\USB-Devices-Monitor\core\usb_search.py", line 116, in scan_usb_devices
+    if not parent_dev_id in usb_id:
+           ^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: 'in <string>' requires string as left operand, not NoneType
+16:32:46 [INFO] core.usb_search: 搜索USB设备...
+16:32:47 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:32:48 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+16:32:48 [ERROR] main: 程序运行异常：'DeviceList' object is not iterable
+Traceback (most recent call last):
+  File "D:\tmp\USB-Devices-Monitor\main.py", line 84, in main
+    print_device_list(devices)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\tmp\USB-Devices-Monitor\utils\helper_function.py", line 31, in print_device_list
+    for i, dev in enumerate(devices, 1):
+                  ~~~~~~~~~^^^^^^^^^^^^
+TypeError: 'DeviceList' object is not iterable
+16:34:10 [INFO] core.usb_search: 搜索USB设备...
+16:34:12 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:34:13 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+16:34:13 [ERROR] main: 程序运行异常：'DeviceList' object is not iterable
+Traceback (most recent call last):
+  File "D:\tmp\USB-Devices-Monitor\main.py", line 84, in main
+    print_device_list(devices)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "D:\tmp\USB-Devices-Monitor\utils\helper_function.py", line 31, in print_device_list
+    for i, dev in enumerate(devices, 1):
+                  ~~~~~~~~~^^^^^^^^^^^^
+TypeError: 'DeviceList' object is not iterable
+16:38:32 [INFO] core.usb_search: 搜索USB设备...
+16:38:33 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:38:34 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+16:38:34 [INFO] main: 运行结束
+16:41:52 [INFO] core.usb_search: 搜索USB设备...
+16:41:53 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:41:54 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+16:41:54 [INFO] main: 运行结束

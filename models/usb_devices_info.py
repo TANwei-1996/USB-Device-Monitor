@@ -17,7 +17,7 @@ class USBDeviceInfo:
     pid: str
     status: str
     device_type: Optional[str] = None
-    # vendor_name: Optional[str] = None
+    audio_children: Optional[List[Dict]] = None
 
     def to_dict(self) -> Dict:
         return asdict(self)
