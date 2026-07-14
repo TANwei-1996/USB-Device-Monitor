@@ -229,3 +229,14 @@ TypeError: 'DeviceList' object is not iterable
 16:41:53 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
 16:41:54 [INFO] core.usb_search: 扫描完成，发现 5 个设备
 16:41:54 [INFO] main: 运行结束
+15:03:02 [INFO] __main__: 使用设备 [16] 麦克风 (Realtek HD Audio Mic input)
+15:09:45 [INFO] __main__: 使用设备 [15] 耳机 (Nuroum Bluetooth OW20B)
+15:18:35 [INFO] __main__: 使用设备 [15] 耳机 (Nuroum Bluetooth OW20B)
+15:28:50 [INFO] __main__: 使用设备 [15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+17:16:57 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+17:21:04 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+17:26:26 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+15:24:46 [INFO] __main__: 输入音频设备：[21] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+15:25:18 [INFO] __main__: 输入音频设备：[21] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+15:25:56 [INFO] __main__: 输入音频设备：[25] 立体声混音 (Realtek HD Audio Stereo input) @ 48000 Hz
+15:26:18 [INFO] __main__: 输入音频设备：[21] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
