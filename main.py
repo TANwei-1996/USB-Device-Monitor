@@ -14,6 +14,7 @@ from utils import (
     safe_str,
 )
 from models.usb_devices_info import USBDeviceInfo, DeviceList
+from core.audio_stream import monitor_realtime, test_mic, get_samplerate
 
 PROJECT_PATH = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_PATH))
@@ -38,7 +39,7 @@ def build_devices(raw_list):
             vid=vid,
             pid=pid,
             status=status,
-            device_type=device_type(name),
+            device_type=device_type(name, iid),
             audio_children=d.get('audio_children') or []
         ))
     return DeviceList(devices=result)
@@ -48,21 +49,21 @@ def show_details(d_list):
     """
     输出设备信息 --- 到子设备列表中
     """
-    print("=" * 30 +  " 设备信息 "  + "=" * 30)
-
+    print("=" * 30 + " 设备信息 " + "=" * 30)
 
     # 设备列表
     for i, d in enumerate(d_list.devices, 1):
         print(f"\n[{i}] {d.friendly_name}")
         print(f"    VID:  {d.vid}")
         print(f"    PID:  {d.pid}")
-        #显示分支下的音频设备
+        # 显示分支下的音频设备
         if hasattr(d, 'audio_children') and d.audio_children:
             print(f"    音频功能:")
             for audio in d.audio_children:
                 print(f"      - [{audio['direction']}] {audio['name']}")
 
         print(f"    状态: {d.status}")
+
 
 def main():
     print("=" * 70)

@@ -240,3 +240,76 @@ TypeError: 'DeviceList' object is not iterable
 15:25:18 [INFO] __main__: 输入音频设备：[21] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
 15:25:56 [INFO] __main__: 输入音频设备：[25] 立体声混音 (Realtek HD Audio Stereo input) @ 48000 Hz
 15:26:18 [INFO] __main__: 输入音频设备：[21] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+16:58:03 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:10:46 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:14:33 [INFO] __main__: 输入音频设备：[21] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+17:18:44 [INFO] __main__: 输入音频设备：[21] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+17:27:25 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:29:55 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:30:59 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:32:17 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:33:05 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:33:20 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:34:24 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:35:34 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:35:49 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:36:08 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:36:24 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:36:57 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:38:05 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:39:16 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:39:56 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:40:30 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+17:49:02 [INFO] __main__: 输入音频设备：[9] 耳机 (Nuroum Bluetooth OW20B) @ 44100 Hz
+16:49:21 [INFO] core.usb_search: 搜索USB设备...
+16:49:22 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+16:49:23 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+16:49:23 [INFO] main: 运行结束
+17:00:25 [INFO] core.usb_search: 搜索USB设备...
+17:00:26 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+17:00:27 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+17:00:27 [ERROR] main: 程序运行异常：device_type() missing 1 required positional argument: 'instance_id'
+Traceback (most recent call last):
+  File "D:\tmp\USB-Devices-Monitor\main.py", line 84, in main
+    dev_list = build_devices(devices)
+  File "D:\tmp\USB-Devices-Monitor\main.py", line 41, in build_devices
+    device_type=device_type(name),
+                ~~~~~~~~~~~^^^^^^
+TypeError: device_type() missing 1 required positional argument: 'instance_id'
+17:02:49 [INFO] core.usb_search: 搜索USB设备...
+17:02:50 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+17:02:50 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+17:02:50 [INFO] main: 运行结束
+14:06:43 [INFO] core.usb_search: 搜索USB设备...
+14:06:44 [INFO] core.search_audio: ============================== 搜索音频设备 ==============================
+14:06:45 [INFO] core.usb_search: 扫描完成，发现 5 个设备
+14:06:45 [INFO] main: 运行结束
+14:22:52 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:23:46 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:26:47 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:26:53 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:26:54 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:26:55 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:26:56 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:35:03 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:35:06 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:35:09 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:35:10 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:35:11 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:35:13 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:37:20 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:37:24 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:37:25 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:38:38 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:40:25 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:44:22 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:45:03 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:45:07 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:45:08 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:45:09 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:52:25 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:52:27 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:52:28 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:52:29 [INFO] __main__: 未检测到语音能量活动值：设备判定静音
+14:53:43 [INFO] __main__: 输入音频设备：[15] 耳机 (Nuroum Bluetooth OW20B) @ 16000 Hz
+14:53:52 [INFO] __main__: 未检测到语音能量活动值：设备判定静音

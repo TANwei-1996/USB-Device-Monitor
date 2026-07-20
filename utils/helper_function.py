@@ -41,26 +41,31 @@ def print_device_list(devices: List[Dict]) -> None:
 
     print("-" * 75)
 
-def device_type(name: Optional[str]) -> str:
+def device_type(name: Optional[str],instance_id:Optional[str]) -> str:
     """获取设备类型"""
     if not name:
-        return "None"
+        return "Unknown"
 
-    n = name.lower()
+    product_n = name.lower()
+    # 获取蓝牙信息id
+    bluetooth_id = (instance_id or "").lower()
+    # 蓝牙检测
+    if ('bluetooth' in product_n) or ('bth' in bluetooth_id) or ('bthenum' in bluetooth_id):
+        return "蓝牙音频设备"
 
-    if 'audio' in n or 'sound' in n or '声卡' in name:
+    if 'audio' in product_n or 'sound' in product_n or '声卡' in name:
         return "音频设备"
-    if 'camera' in n or 'webcam' in n or '摄像' in name:
+    if 'camera' in product_n or 'webcam' in product_n or '摄像' in name:
         return "视频设备"
-    if 'storage' in n or 'disk' in n or '存储' in name:
+    if 'storage' in product_n or 'disk' in product_n or '存储' in name:
         return "存储设备"
-    if 'hub' in n or '集线器' in name:
+    if 'hub' in product_n or '集线器' in name:
         return "USB集线器"
-    if 'keyboard' in n or '键盘' in name:
+    if 'keyboard' in product_n or '键盘' in name:
         return "键盘"
-    if 'mouse' in n or '鼠标' in name:
+    if 'mouse' in product_n or '鼠标' in name:
         return "鼠标"
-    if 'bluetooth' in n or '蓝牙' in name:
+    if 'bluetooth' in product_n or '蓝牙' in name:
         return "蓝牙设备"
 
     return "其他设备"

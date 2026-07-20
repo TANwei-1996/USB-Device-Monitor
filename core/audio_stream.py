@@ -1,11 +1,8 @@
-"""
-实时音频采集
-作者：TANYI
-2026-07-13
-"""
 import time
 import numpy as np
 import sounddevice as sd
+from fontTools.unicodedata import block
+
 from utils import setup_logger
 
 logger = setup_logger(__name__)
@@ -13,13 +10,21 @@ logger = setup_logger(__name__)
 # 全局变量
 VOICE_DB_THRESHOLD = -30  # 语音阈值
 VOICE_DB_MIN = -60  # 最低分贝
-BAR_WIDTH = 50  # 音量条最大宽度
+BAR_WIDTH = 50  # 音量条宽度
 RMS_SILENCE = 0.0001  # 静音阈值默认判定值
+
+# 常数：做分母防除零（浮点法）
+VALUE = 1e-10
+
+
+# 整合相关计算
+def rms_():
+    pass
 
 
 def audio_dev_list():
     """
-    所有的音频设备
+    获取音频设备
     :return:
     """
     print("=" * 30 + "可用音频设备" + "=" * 30, end="\n")
@@ -104,21 +109,53 @@ def get_samplerate(device_idx: int, default: int = 44100) -> int:
     except Exception:
         return default
 
-    # 蓝牙耳机常见采样率优先（8000/16000 通话用）
+    # 蓝牙常见采用率：KHz -- 一般16KHz偏多
     candidates = [
         int(info['default_samplerate']),
         16000, 8000, 48000, 44100, 32000, 22050, 11025
     ]
 
     for sr in candidates:
+        # 针对过滤 -1、0这种第一优先检测出来的不合法采样率
+        # not in candidates：会将本身合理的却不在candidates过滤掉，不合理
         if sr <= 0:
             continue
         try:
             sd.check_input_settings(device=device_idx, samplerate=sr)
             return sr
-        except Exception:
+        except Exception as e:
+            logger.info(f"采样率输入确认不符合:{e}")
             continue
     return default
+
+
+def voice_act(block, samplerate, energy_val=0.01, zcr_val=0.3):
+    """
+    VAD:语音活动检测
+    :param block: 单帧音频数据块
+    :param samplerate: 音频采样率
+    :param energy_val:  能量阈值（短时能量），默认：0.01
+    :param zcr_val: 过零率阈值，默认：0.3
+    :return:
+    """
+
+    # 计算RMS
+    rms_voice = float(np.sqrt(np.mean(block ** 2)))
+    if rms_voice < energy_val:
+        logger.info("未检测到语音能量活动值：设备判定静音")
+        return False
+    # 过零计算
+    # block.flatten():将音频多维数据拉平成一维采样点序列
+    # 输出数组只有 -1 / 0 / 1，只保留波形正负、丢弃振幅大小
+    voice_signal = np.sign(block.flatten())
+    # voice_signal = np.sign(block.flatten()) *
+    # np.log1p(block.flatten() / rms_voice) # np.log1p(block.flatten() / rms_voice)做时域特征提取、语音特征建模、能量加权 ZCR
+    cross = int(np.sum(np.diff(voice_signal) != 0))
+    # 标准zcr计算公式：阈值0.1-0.5区间
+    zcr = cross / (len(voice_signal) -1 )
+    if zcr > zcr_val:
+        return False
+    return True
 
 
 def test_mic(duration: int = 10, samplerate: int = 44100, device_ind=None):
@@ -141,7 +178,7 @@ def test_mic(duration: int = 10, samplerate: int = 44100, device_ind=None):
     print(f"\n ... 开始录音 {duration} 秒 ...")
     try:
         recording = sd.rec(
-            int(duration * samplerate),  # 计算总样本点数
+            int(duration * samplerate),
             samplerate=samplerate,
             channels=1,
             dtype='float32',
@@ -169,7 +206,7 @@ def test_mic(duration: int = 10, samplerate: int = 44100, device_ind=None):
     # 峰值大小
     peak = float(np.max(np.abs(recording)))
     # 分贝：db
-    db = 20 * np.log10(rms + 1e-10)
+    db = 20 * np.log10(rms + VALUE)
 
     print("\n 录音完成：", flush=True)
     print(f" RMS 音量: {rms:.6f}", flush=True)
@@ -190,7 +227,6 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
     :param blocksize: 每次处理的样本块大小
     :param device_ind: 设备 index，None 则让用户选
     """
-    VALUE = 1e-10
     # 手动选择输入设备
     if device_ind is None:
         device_ind = select_input_device()
@@ -216,18 +252,26 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
     noise_count = 10  # 默认帧数设置：10
     consecutive_frames = 0  # 连续安静环境下的帧数计算初始值：0
 
+    # 音频能量变化状态
+    # 设置初始：None - 无输入能量
+    rms_pre = None
+    rms_his_l = []  # 创建空列表存放过往RMS记录
+
     print(f"\n === 实时声音检测（{duration} 秒）===")
     print(f"采样率: {samplerate} Hz | 设备: [{device_ind}] {mic_name}")
     print("声音检测中...., ctrl+c提前结束\n")
-    print("-" * 60, flush=True)
-    print(f" {'dB':>8} | {'RMS':>10} | {'峰值':>8} | {'短时能量':>9} | {'过零率':>8} | {'底噪':>8} | {'削波':>5} |", flush=True)
-    print("-" * 60, flush=True)
+    print("-" * 92, flush=True)
+    print(f" {'dB':>6} | {'RMS':>6} | {'峰值':>8} | {'波峰因子':>10} | {'信噪比':>14} | {'变化率%':>6} | {'过零率':>8} | {'底噪':>6} | {'削波':<6} |", flush=True)
+    print("-" * 92, flush=True)
 
+    # 开始时间
     start_time = time.time()
     count = 5  # 循环最大次数
     count_1 = 0
     try:
         while (time.time() - start_time) < duration:
+            snr_str = f"{'--':>14}"
+            change_energy_str = f"{'--':>6}"
             try:
                 block = sd.rec(
                     blocksize,
@@ -246,7 +290,7 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
                     break
                 continue
 
-            # 空数据保护
+            # 空数据处理
             if block is None or block.size == 0:
                 continue
 
@@ -254,21 +298,38 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
             rms = float(np.sqrt(np.mean(block ** 2)))
             voice_db = 20 * np.log10(rms + VALUE)
 
-            # 音频数据峰值幅度
+            # 音频：峰值
             peak = float(np.max(np.abs(block)))
+
+            # 音频波峰因子(crest_factor)
+            # 计算公式：CF(dB) = 峰值（peak）/ RMS有效值
+            # 正弦波因子：1.141
+            # 判断rms分贝
+            if rms > 0:
+                c_f = peak / (rms + VALUE)
+            else:
+                c_f = 0
+            crest_f = f"{c_f:>10.2f}"
 
             # 短时能量值
             short_time_val = rms
+
+            # 计算音频能量状态：(当前RMS - 上一帧RMS) / 上一帧RMS * 100%
+            change_energy = None
+            if (rms_pre is not None) and (rms_pre > 0):
+                change_energy = ((rms - rms_pre) / rms_pre) * 100
+            rms_pre = rms
+            rms_his_l.append(rms)
 
             # 过零率
             # 统计数据变化标志的数量
             signs = np.sign(block.flatten())
             zero_crossings = int(np.sum(np.diff(signs) != 0))
-            # 计算过零率
-            crossings_val = blocksize / samplerate
-            zcr = zero_crossings / crossings_val  # 次/秒
 
-            # 统计底噪数量值-概率值（非具体）
+            # 过零率计算
+            zcr = zero_crossings / (blocksize - 1)
+
+            # 底噪数量值-概率值（非具体）
             if rms < noise_rms_sampler:
                 consecutive_frames += 1
             else:
@@ -293,21 +354,34 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
             else:
                 voice_clip_flag = ""
 
+            # VAD
             # 声音波动标识
             # 输入声音能量大于阈值，添加标识，否则不添加，为空标识
-            if voice_db > VOICE_DB_THRESHOLD:
-                voice_flag = "🔊"
+            voice_active = voice_act(block, samplerate=samplerate)
+            if voice_active:
+                voice_flag = "有声"
             else:
-                voice_flag = " "
+                voice_flag = "无声"
 
             if noise_db_sampler is not None:
-                noise_str = f"{noise_db_sampler:8.2f}"
+                noise_str = f"{noise_db_sampler:>6.2f}"
             else:
-                noise_str = f"{'--':>8}"
-            # 格式化指标输出打印
-            print(f" {voice_db:8.2f} | {rms:10.6f} | {peak:8.4f} | {short_time_val:9.6f} | "
-                  f"{zcr:8.1f} | {noise_str} | {voice_clip_flag:<6} | {voice_flag}", flush=True)
+                noise_str = f"{'--':>6}"
 
+            # 信噪比：Signal‑to‑Noise Ratio
+            # 计算公式：snr = 当前信号分贝（voice_db） - 底噪（noise_db_sampler）
+            snr_db = None
+            if (noise_db_sampler is not None) and rms > 0:
+                snr_db = voice_db - noise_db_sampler
+
+            if snr_db is not None:
+                snr_str = f"{snr_db:>14.2f}"
+
+            if change_energy is not None:
+                change_energy_str = f"{change_energy:>6.2f}"
+
+            print(f" {voice_db:>6.2f} | {rms:>6.2f} | {peak:>8.2f} | {crest_f} | {snr_str} | {change_energy_str} | "
+                  f"{zcr:>8.2f} | {noise_str} | {voice_clip_flag:<6} | {voice_flag}", flush=True)
 
     except KeyboardInterrupt:
         print("\n 已停止检测", flush=True)
@@ -327,12 +401,26 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
         print(f" 语音活动:   有声")
     else:
         print(f" 语音活动:   无声音：安静")
+
+    # 计算动态变化
+    # 判断历史rms列表是否存在数据
+    if len(rms_his_l) > 0:
+        update_list = []
+        for r in rms_his_l:
+            if r > RMS_SILENCE:
+                update_list.append(r)
+        if update_list:
+            max_rms = max(update_list)
+            min_rms = min(update_list)
+            rms_range_db = 20 * np.log10(max_rms / (min_rms + VALUE))
+            print(f"最大RMS：{max_rms:.2f} || 最小RMS：{min_rms:.2f} || 动态范围变化大小：{rms_range_db:8.2f} dB")
+        else:
+            print("动态范围：有效声音数据不足")
+
     print(f" 检测结束", flush=True)
 
 
 if __name__ == '__main__':
     audio_dev_list()
     print()
-    monitor_realtime(duration=10)  # 实时监测 10 秒，5 项指标
-    # monitor_realtime(duration=30)    # 监测 30 秒
-    # test_mic()                       # 一次性录音
+    monitor_realtime(duration=10)  # 实时监测10秒

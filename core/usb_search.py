@@ -22,19 +22,23 @@ def split_vid_pid(device_id: str) -> Tuple[str, str]:
     :return:
     """
     if not device_id:
-        return "None：未知", "None：未知"
+        return "N/A", "N/A"
 
-    vid = "None：未知"
-    pid = "None：未知"
+    vid = "N/A"
+    pid = "N/A"
     # 正则匹配VID_后四位
     m_vid = re.search(r'VID_([0-9A-Fa-f]{4})', device_id, re.I)
     if m_vid:
         vid = m_vid.group(1).upper()
+    else:
+        vid = "N/A"
 
     # 正则匹配PID_后四位
     m_pid = re.search(r'PID_([0-9A-Fa-f]{4})', device_id, re.I)
     if m_pid:
         pid = m_pid.group(1).upper()
+    else:
+        pid = "N/A"
 
     return vid, pid
 
