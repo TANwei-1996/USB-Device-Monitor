@@ -3,6 +3,7 @@
 作者：TANYI
 日期：2026-07-02
 """
+import sys
 import json
 import subprocess
 from typing import List, Dict
@@ -10,7 +11,8 @@ from utils import setup_logger
 
 # 日志模块初始化
 log = setup_logger(__name__)
-
+# 编解码判定
+encode = "gbk" if sys.platform == "win32" else "utf-8"
 def scan_audio_devices() -> List[Dict]:
     """
     扫描音频输入/输出设备
@@ -34,10 +36,11 @@ def scan_audio_devices() -> List[Dict]:
             capture_output=True,
             text=True,
             timeout=10,
+            encoding=encode,
             errors='ignore',
-            encoding='gbk'
         )
-        if not (output := (res.stdout or '').strip()):
+        output = (res.stdout or '').strip()
+        if not output:
             return []
 
         data = json.loads(output)
@@ -50,25 +53,25 @@ def scan_audio_devices() -> List[Dict]:
         log.info (f"音频搜索异常：{e}")
         return []
 
-def check_audio_dir(name:str) -> str:
+def check_audio_dir(dir_name:str):
     """
     确认设备是输入还是输出
-    :param name:
+    :param dir_name:
     :return:
     """
 
-    if not name:
+    if not dir_name:
         return "None"
 
-    n = name.lower()
+    n = dir_name.lower()
 
     try:
         # 输入名称检索
-        if ('microphone' in n) or ('mic' in n) or ('麦克风' in name):
+        if ('microphone' in n) or ('mic' in n) or ('麦克风' in dir_name):
             return "音频输入"
 
         # 输出名称检索
-        if ('speaker' in n) or ('headphone' in n) or ('耳机' in name) or ('扬声器' in name):
+        if ('speaker' in n) or ('headphone' in n) or ('耳机' in dir_name) or ('扬声器' in dir_name):
             return "音频输出"
 
         return "音频设备"
@@ -81,8 +84,8 @@ if __name__ == '__main__':
     for d in d:
         # 如果未获取到，直接 “None”返回
         name = d.get('FriendlyName', 'None')
-        dir = check_audio_dir(name)
+        audio_dir = check_audio_dir(name)
         # 总分支设备（父类设备）
         parent = d.get('ParentInstanceId', 'None：无父类设备')
-        print(f"[{dir}]{name}")
+        print(f"[{audio_dir}]{name}")
         print(f"父类设备：{parent}")

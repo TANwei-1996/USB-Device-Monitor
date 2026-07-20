@@ -1,8 +1,6 @@
 import time
 import numpy as np
 import sounddevice as sd
-from fontTools.unicodedata import block
-
 from utils import setup_logger
 
 logger = setup_logger(__name__)
@@ -12,7 +10,9 @@ VOICE_DB_THRESHOLD = -30  # 语音阈值
 VOICE_DB_MIN = -60  # 最低分贝
 BAR_WIDTH = 50  # 音量条宽度
 RMS_SILENCE = 0.0001  # 静音阈值默认判定值
-
+NOISE_LONG = 30 # 底噪最大长度
+# 设置极限非削波值大小
+WAVE_CUTTING_RANGE = 0.99
 # 常数：做分母防除零（浮点法）
 VALUE = 1e-10
 
@@ -106,7 +106,8 @@ def get_samplerate(device_idx: int, default: int = 44100) -> int:
     """
     try:
         info = sd.query_devices(device_idx)
-    except Exception:
+    except Exception as e:
+        logger.info(e)
         return default
 
     # 蓝牙常见采用率：KHz -- 一般16KHz偏多
@@ -129,11 +130,11 @@ def get_samplerate(device_idx: int, default: int = 44100) -> int:
     return default
 
 
-def voice_act(block, samplerate, energy_val=0.01, zcr_val=0.3):
+def voice_act(block, energy_val=0.01, zcr_val=0.3):
     """
     VAD:语音活动检测
     :param block: 单帧音频数据块
-    :param samplerate: 音频采样率
+    # :param samplerate: 音频采样率
     :param energy_val:  能量阈值（短时能量），默认：0.01
     :param zcr_val: 过零率阈值，默认：0.3
     :return:
@@ -245,7 +246,6 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
     # 背景噪声
     # 安静环境下的音量值
     noise_sampler = []  # 定义存储安静环境下的音量RMS
-    noise_db_sampler = None  # 底噪
 
     # 定义全局变量：初始默认值
     noise_rms_sampler = 0.005  # 定义安静判定值大小：如rms＜0.005：安静
@@ -298,6 +298,11 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
             rms = float(np.sqrt(np.mean(block ** 2)))
             voice_db = 20 * np.log10(rms + VALUE)
 
+            if voice_db > VOICE_DB_THRESHOLD:
+                print(f" 语音活动:   有声")
+            else:
+                print(f" 语音活动:   无声音：安静")
+
             # 音频：峰值
             peak = float(np.max(np.abs(block)))
 
@@ -310,9 +315,6 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
             else:
                 c_f = 0
             crest_f = f"{c_f:>10.2f}"
-
-            # 短时能量值
-            short_time_val = rms
 
             # 计算音频能量状态：(当前RMS - 上一帧RMS) / 上一帧RMS * 100%
             change_energy = None
@@ -339,15 +341,13 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
                 noise_sampler.append(rms)
 
             if len(noise_sampler) > 0:
-                recent = noise_sampler[-30:]
+                recent = noise_sampler[-NOISE_LONG:]
                 noise_db_sampler = 20 * np.log10(np.mean(recent) + VALUE)
             else:
                 noise_db_sampler = None
 
             # 削波：以频谱上下±1归一化振幅区间统计，超出该区间判定为能量过大导致声音削波
             # 说明解释：数字音频标准：+1.0 和 -1.0 就是 0dBFS（满量程），超过 ±1 就会削波失真；0 代表静音
-            # 设置极限非削波值大小
-            WAVE_CUTTING_RANGE = 0.99
             clipped = int(np.sum(np.abs(block) >= WAVE_CUTTING_RANGE))
             if clipped > 0:
                 voice_clip_flag = "削波"
@@ -357,7 +357,7 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
             # VAD
             # 声音波动标识
             # 输入声音能量大于阈值，添加标识，否则不添加，为空标识
-            voice_active = voice_act(block, samplerate=samplerate)
+            voice_active = voice_act(block)
             if voice_active:
                 voice_flag = "有声"
             else:
@@ -380,8 +380,11 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
             if change_energy is not None:
                 change_energy_str = f"{change_energy:>6.2f}"
 
-            print(f" {voice_db:>6.2f} | {rms:>6.2f} | {peak:>8.2f} | {crest_f} | {snr_str} | {change_energy_str} | "
-                  f"{zcr:>8.2f} | {noise_str} | {voice_clip_flag:<6} | {voice_flag}", flush=True)
+            print(
+                f" {voice_db:>6.2f} | {rms:>6.2f} | {peak:>8.2f} | {crest_f} | {snr_str} | {change_energy_str} | "
+                f"{zcr:>8.2f} | {noise_str} | {voice_clip_flag:<6} | {voice_flag}",
+                flush=True
+            )
 
     except KeyboardInterrupt:
         print("\n 已停止检测", flush=True)
@@ -391,16 +394,11 @@ def monitor_realtime(duration: int = 10, samplerate: int = 44100,
     # 数据最终打印结果
     print("\n========== 本次监测报告 ==========\n")
     if len(noise_sampler) > 0:
-        final_noise = np.mean(noise_sampler[-30:])
+        final_noise = np.mean(noise_sampler[-NOISE_LONG:])
         final_noise_db = 20 * np.log10(final_noise + VALUE)
         print(f" 底噪水平:   {final_noise_db:8.2f} dB")
     else:
         print(f" 底噪水平:   未检测到安静片段:持续有声音")
-
-    if voice_db > VOICE_DB_THRESHOLD:
-        print(f" 语音活动:   有声")
-    else:
-        print(f" 语音活动:   无声音：安静")
 
     # 计算动态变化
     # 判断历史rms列表是否存在数据

@@ -24,8 +24,6 @@ def split_vid_pid(device_id: str) -> Tuple[str, str]:
     if not device_id:
         return "N/A", "N/A"
 
-    vid = "N/A"
-    pid = "N/A"
     # 正则匹配VID_后四位
     m_vid = re.search(r'VID_([0-9A-Fa-f]{4})', device_id, re.I)
     if m_vid:
@@ -84,9 +82,9 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
         else:
             return []
 
-        for d in devices:
-            id = d.get('InstanceId') or d.get('instanceId') or ""
-            vid, pid = split_vid_pid(id)
+        for out_d in devices:
+            dev_out_id = out_d.get('InstanceId') or d.get('instanceId') or ""
+            vid, pid = split_vid_pid(dev_out_id)
             d['VID'] = vid
             d['PID'] = pid
 

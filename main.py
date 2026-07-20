@@ -14,7 +14,6 @@ from utils import (
     safe_str,
 )
 from models.usb_devices_info import USBDeviceInfo, DeviceList
-from core.audio_stream import monitor_realtime, test_mic, get_samplerate
 
 PROJECT_PATH = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_PATH))

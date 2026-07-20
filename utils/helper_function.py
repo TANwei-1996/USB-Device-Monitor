@@ -4,7 +4,7 @@
 日期：2026-07-02
 """
 
-from typing import Any, List, Dict, Optional
+from typing import List, Dict, Optional
 
 def safe_str(value:str, default="None") -> str:
     """防止None报错"""
