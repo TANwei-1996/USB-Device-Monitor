@@ -44,6 +44,21 @@ def split_vid_pid(device_id: str) -> Tuple[str, str]:
 
     return vid, pid
 
+def decode_power_shell_output(output: bytes) -> str:
+    """
+    解码powershell输出 - 正对不同系统的编解码自适应，规避出现中文字符下乱码问题
+    :param output: powershell输出
+    :return: 解码后的json数据
+    """
+    if not output:
+        return ""
+    for enc in ("utf-8", "gbk"):
+        try:
+            return output.decode(enc)
+        except UnicodeDecodeError:
+            continue
+    # 编解码均出问题时，返回原始字符串，避免抛出异常
+    return output.decode("utf-8", errors="replace")
 
 def check_audio_endpoint() -> List[Dict]:
     """
@@ -68,12 +83,13 @@ def check_audio_endpoint() -> List[Dict]:
     res = subprocess.run(
         ["powershell", "-NoProfile", "-Command", power_shell_script_01],
         capture_output=True,
-        text=True,
-        encoding='utf-8',
-        errors='replace',
-        timeout=20,
+        # 去掉强制编解码，避免中文字符下乱码问题
+        # text=True,
+        # encoding='utf-8',
+        # errors='replace',
+        timeout=30,
     )
-    output = (res.stdout or "").strip()
+    output = decode_power_shell_output(res.stdout)
     if not output:
         return []
     
@@ -137,8 +153,8 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
         # 创建空列表，用来存放设备信息
         devices = []
         for item in items:
-            # 获取不到endpoint，直接返回“ ”
-            point = item.get('endpoint', " ")
+            # 获取不到endpoint，直接返回None
+            point = item.get('endpoint', None)
             vid, pid = split_vid_pid(point)
             devices.append({
                 # 设备名
@@ -146,7 +162,7 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
                 # 设备ID
                 'InstanceId': point,
                 # 设备状态
-                'Status': item.get('status') or 'None',
+                'Status': item.get('status', None) ,
                 # 设备vid、pid
                 'VID': vid,
                 'PID': pid,
