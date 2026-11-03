@@ -25,7 +25,7 @@ def check_audio_dir(name:str) -> str:
     n = name.lower()
 
     try:
-        # 输入名称检索
+        # 输入设备检索相关设备信息
         if ('microphone' in n) or ('mic' in n) or ('麦克风' in name):
             return "音频输入"
 
