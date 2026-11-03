@@ -66,7 +66,7 @@ def show_details(d_list):
 
 def main():
     print("=" * 70)
-    print("  USB设备监控器  v0.1.1")
+    print("  USB设备监控器  v0.1.2")
     print("=" * 70)
     print()
 
