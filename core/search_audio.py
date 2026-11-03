@@ -2,6 +2,8 @@
 音频设备具体到麦克风和扬声器
 作者：TANYI
 日期：2026-07-02
+修改记录：
+    2026-07-02：v0.1.2 (fix/v0.1.2-core-scan) - 修复GBK硬编码乱码
 """
 import json
 import subprocess
@@ -34,8 +36,8 @@ def scan_audio_devices() -> List[Dict]:
             capture_output=True,
             text=True,
             timeout=10,
-            errors='ignore',
-            encoding='gbk'
+            encoding='utf-8',
+            errors='replace',
         )
         if not (output := (res.stdout or '').strip()):
             return []
