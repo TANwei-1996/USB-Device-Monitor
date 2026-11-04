@@ -79,7 +79,7 @@ def main():
         devices = scan_usb_devices(connected_audio=True)
 
         if not devices:
-            print("无USB设备接入")
+            print("未检测到任何音频端点设备（扫描过程正常完成）")
             return 0
 
         print(f"找到 {len(devices)} 个设备")
@@ -94,11 +94,13 @@ def main():
         print("\n已取消")
         return 0
     except AllExceptionError as e:
-        log.error(f"扫描USB设备异常：{e}")
-        return 1
+        # P0-4：扫描失败退出码 = 2，与成功(0)、程序异常(1)区分
+        log.error(f"扫描失败：{e}")
+        print(f"扫描失败：{e}")
+        return 2
     except Exception as e:
         log.exception(f"程序运行异常：{e}")
-        return 2
+        return 1
 
 
 if __name__ == '__main__':
