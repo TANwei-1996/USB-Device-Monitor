@@ -3,9 +3,11 @@
 作者：TANYI
 日期：2026-07-02
 修改记录：
-    2026-07-02：v0.1.2 (fix/v0.1.2-core-scan) ：
+    2026-11-03：v0.1.2 (fix/v0.1.2-core-scan) ：
     - 修复GBK硬编码乱码；
     - 删除scan_audio_devices(数据源)，端点枚举改由usb_search父链查询实现一致性；
+    2026-11-04：v0.1.3 (fix/v0.1.3) - 优化日志打印类型为error
+    
 """
 from utils import setup_logger
 
@@ -35,5 +37,5 @@ def check_audio_dir(name:str) -> str:
 
         return "音频设备"
     except Exception as e:
-        log.info(f"输入输出设备检索异常：{e}")
-        return "None"
+        log.error(f"输入输出设备检索异常：{e}")
+        return "音频设备"

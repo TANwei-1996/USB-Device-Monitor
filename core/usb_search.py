@@ -3,8 +3,9 @@ USB设备扫描核心逻辑
 作者：TANYI
 日期：2026-07-02
 修改记录：
-    2026-07-02：v0.1.2 (fix/v0.1.2-core-scan) ：
-    - 一次提取父链层的VID/PID信息, 无需递归查询子设备 - 规避检索全为null的问题
+    2026-11-03：v0.1.2 (fix/v0.1.2-core-scan) ：
+        一次提取父链层的VID/PID信息, 无需递归查询子设备 - 规避检索全为null的问题
+    2026-11-04：v0.1.3 (fix/v0.1.3) - 优化异常处理机制
 """
 
 import re
@@ -12,6 +13,7 @@ import json
 import subprocess
 from utils import setup_logger
 from typing import List, Dict, Tuple
+from models import AllExceptionError
 from .search_audio import check_audio_dir
 
 # 调用函数setup_logger初始化日志模块
@@ -80,24 +82,50 @@ def check_audio_endpoint() -> List[Dict]:
         "[PSCustomObject]@{ name = $name; endpoint = $ep; status = $st; chain = $chain } } | "
         "ConvertTo-Json -Compress -Depth 3"
     )
-    res = subprocess.run(
-        ["powershell", "-NoProfile", "-Command", power_shell_script_01],
-        capture_output=True,
-        # 去掉强制编解码，避免中文字符下乱码问题
-        # text=True,
-        # encoding='utf-8',
-        # errors='replace',
-        timeout=30,
-    )
+    # 尝试运行powershell命令，捕获exception异常并抛出打印信息
+    try:
+        res = subprocess.run(
+            ["powershell", "-NoProfile", "-Command", power_shell_script_01],
+            capture_output=True,
+            # 去掉强制编解码，避免中文字符下乱码问题
+            # text=True,
+            # encoding='utf-8',
+            # errors='replace',
+            timeout=30,
+        )
+    except FileNotFoundError as file_err:
+        raise AllExceptionError(
+            f" --- powershell运行命令异常，排查SHELL运行环境以及命令相关 ---"
+            ) from file_err
+    except subprocess.TimeoutExpired as t:
+        raise AllExceptionError(
+            f"PowerShell查询超时（{t.timeout}秒），设备响应过慢或系统繁忙"
+            ) from t
+
+    # 判断powershell执行是否成功，返回码为0表示成功
+    if res.returncode != 0:
+        raise AllExceptionError(
+            f"PowerShell执行失败，返回码：{res.returncode}"
+            ) 
+    # 返回码为0，解析powershell输出为json数据
     output = decode_power_shell_output(res.stdout)
-    if not output:
-        return []
+    if not output: 
+        return []   # 当运行输出码为0（无输出），返回空列表
     
-    data = json.loads(output)
+    try:
+        data = json.loads(output)
+    except json.JSONDecodeError as json_err:
+        raise AllExceptionError(
+            f" --- JSON解析错误：{json_err} ---"
+            ) from json_err
+
     if isinstance(data, dict):
         data = [data]
     if not isinstance(data, list):
-        return []
+        raise AllExceptionError(
+            # type(data).__name__ 获取类型名称(data)的数据类型
+            f"PowerShell输出类型异常，实际为 {type(data).__name__}"
+        )
     
 
     for item in data:
@@ -130,24 +158,12 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
     :return: USB字典列表 -  FriendlyName / InstanceId / Status / VID / PID / audio_children
     """
     log.info("搜索USB设备...")
-    try:
-        # 尝试运行父层检索
-        items = check_audio_endpoint()
-        if not items:
-            return []
-    # 处理异常：针对超时、JSON解析错误、其他异常，并实施打印日志
-    except subprocess.TimeoutExpired:
-        log.error(f" --- 搜索超时，执行超时 ---")
-        return []
-    except json.JSONDecodeError:
-        log.error(f" --- JSON解析错误 ---")
-        return []
-    except Exception as e:
-        log.error(f"搜索异常：{e} ---")
-        return []
+    # 尝试运行父层检索
+    items = check_audio_endpoint()
     if not items:
+        log.info("--- 未检测到音频设备端点")
         return []
-
+   
     # 分层级逐步打印记录端点信息
     if not connected_audio:
         # 创建空列表，用来存放设备信息

@@ -4,8 +4,12 @@ USB设备监控器 - 主程序
 2026-07-02
 """
 
+from typing import Any
+
+
 import sys
 from pathlib import Path
+from models.AllExceptError import AllExceptionError
 from core.usb_search import scan_usb_devices
 from utils import (
     setup_logger,
@@ -66,7 +70,7 @@ def show_details(d_list):
 
 def main():
     print("=" * 70)
-    print("  USB设备监控器  v0.1.2")
+    print("  USB设备监控器  v0.1.3")
     print("=" * 70)
     print()
 
@@ -89,9 +93,12 @@ def main():
     except KeyboardInterrupt:
         print("\n已取消")
         return 0
+    except AllExceptionError as e:
+        log.error(f"扫描USB设备异常：{e}")
+        return 1
     except Exception as e:
         log.exception(f"程序运行异常：{e}")
-        return 1
+        return 2
 
 
 if __name__ == '__main__':
