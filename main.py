@@ -2,13 +2,15 @@
 USB设备监控器 - 主程序
 作者：TANYI
 2026-07-02
+修改记录：
+    2026-011-06：添加数据模型校验自测
 """
 
-from typing import Any
 
 
 import sys
 from pathlib import Path
+from typing import Any
 from models.AllExceptError import AllExceptionError
 from core.usb_search import scan_usb_devices
 from utils import (
@@ -19,12 +21,12 @@ from utils import (
 )
 from models.usb_devices_info import USBDeviceInfo, DeviceList
 
+# 读取项目根目录
 PROJECT_PATH = Path(__file__).resolve().parent
 sys.path.insert(0, str(PROJECT_PATH))
 
 # 调用日志模块
 log = setup_logger("main")
-
 
 def build_devices(raw_list):
     """把扫描出来的原始数据转成对象"""
@@ -70,7 +72,7 @@ def show_details(d_list):
 
 def main():
     print("=" * 70)
-    print("  USB设备监控器  v0.1.3")
+    print("  USB设备监控器  v0.1.4")
     print("=" * 70)
     print()
 
@@ -94,14 +96,13 @@ def main():
         print("\n已取消")
         return 0
     except AllExceptionError as e:
-        # P0-4：扫描失败退出码 = 2，与成功(0)、程序异常(1)区分
+        # 扫描失败退出码 = 2；成功退出码 = 0；程序异常退出码 = 1
         log.error(f"扫描失败：{e}")
         print(f"扫描失败：{e}")
         return 2
     except Exception as e:
         log.exception(f"程序运行异常：{e}")
         return 1
-
 
 if __name__ == '__main__':
     sys.exit(main())
