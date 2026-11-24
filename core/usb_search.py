@@ -104,8 +104,11 @@ def check_audio_endpoint() -> List[Dict]:
 
     # 判断powershell执行是否成功，返回码为0表示成功
     if res.returncode != 0:
+        # 日志打印powershell正确输出和错误输出
+        log.info(f"PowerShell输出：{res.stdout}")
+        log.error(f"PowerShell错误输出：{res.stderr}")
         raise AllExceptionError(
-            f"PowerShell执行失败，返回码：{res.returncode}"
+            f"PowerShell执行失败，返回码：{res.returncode}：错误的输出信息：{res.stderr}"
             ) 
     # 返回码为0，解析powershell输出为json数据
     output = decode_power_shell_output(res.stdout)
@@ -137,7 +140,7 @@ def check_audio_endpoint() -> List[Dict]:
             item['chain'] = []
     return data
 
-def seach_usb_chaindevice(chain: List[str]):
+def search_usb_chain_device(chain: List[str]) -> Optional[str]:
     """
     搜索USB设备父链层VID/PID信息
     :param chain: 父层端点信息
@@ -148,7 +151,7 @@ def seach_usb_chaindevice(chain: List[str]):
             continue
         if c.upper().startswith("USB\\") and USB_VID_PATTERN.search(c):
             return c
-    return None
+    return ""
 
 def scan_usb_devices(connected_audio=False) -> List[Dict]:
     """
@@ -201,7 +204,7 @@ def scan_usb_devices(connected_audio=False) -> List[Dict]:
             "status": status,
         }
         # 搜索USB设备父链层VID/PID信息
-        usb_root = seach_usb_chaindevice(chain)
+        usb_root = search_usb_chain_device(chain)
         # 非usb设备，直接加入loose
         if not usb_root:
             loose.append({
